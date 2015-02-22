@@ -1,183 +1,160 @@
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Must Have
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-set nocompatible " get out of horrible vi-compatible mode
-if has('gui_running')
-    set background=light
-else
-    set background=dark
-endif
-colorscheme solarized
-syntax on " syntax highlighting on
+" URL: http://vim.wikia.com/wiki/Example_vimrc
+" Authors: http://vim.wikia.com/wiki/Vim_on_Freenode
+" Description: A minimal, but feature rich, example .vimrc. If you are a
+"              newbie, basing your first .vimrc on this file is a good choice.
+"              If you're a more advanced user, building your own .vimrc based
+"              on this file is still a good idea.
 
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" General
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-set history=1000 " How many lines of history to remember
-set cf " enable error files and error jumping
-" set clipboard+=unnamed " turns out I do like sharing windows clipboard
-set ffs=unix,dos,mac " support all three, in this order
-set viminfo+=! " make sure it can save viminfo
-set isk+=_,$,@,%,# " none of these should be word dividers, so make them not be
-set nosol " leave my cursor where it was
+"------------------------------------------------------------
+" Features {{{1
+"
+" These options and commands enable some very useful features in Vim, that
+" no user should have to live without.
 
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Files/Backups
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-set backup " make backup file
-set backupdir=~/.vim/backup " where to put backup files
-set directory=~/.vim/temp " directory for temp files
-set makeef=error.err " When using make, where should it dump the file
-set sessionoptions+=globals " What should be saved during sessions being saved
-set sessionoptions+=localoptions " What should be saved during sessions being saved
-set sessionoptions+=resize " What should be saved during sessions being saved
-set sessionoptions+=winpos " What should be saved during sessions being saved
+" Set 'nocompatible' to ward off unexpected things that your distro might
+" have made, as well as sanely reset options when re-sourcing .vimrc
+set nocompatible
 
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Vim UI
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-set lsp=0 " space it out a little more (easier to read)
-set wildmenu " turn on wild menu
-set wildmode=list:longest " turn on wild menu in special format (long format)
-set wildignore=*.dll,*.o,*.obj,*.bak,*.exe,*.pyc,*.swp,*.jpg,*.gif,*.png " ignore formats
-set ruler " Always show current positions along the bottom
-set cmdheight=1 " the command bar is 1 high
-set number " turn on line numbers
-set lz " do not redraw while running macros (much faster) (LazyRedraw)
-set hid " you can change buffer without saving
-set backspace=2 " make backspace work normal
-set whichwrap+=<,>,h,l  " backspace and cursor keys wrap to
-set mouse=a " use mouse everywhere
-set shortmess=atI " shortens messages to avoid 'press a key' prompt
-set report=0 " tell us when anything is changed via :...
-set noerrorbells " don't make noise
-set list " we do what to show tabs, to ensure we get them out of my files
-set listchars=tab:>-,trail:- " show tabs and trailing whitespace
+" Attempt to determine the type of a file based on its name and possibly its
+" contents. Use this to allow intelligent auto-indenting for each filetype,
+" and for plugins that are filetype specific.
+filetype indent plugin on
 
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Visual Cues
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-set showmatch " show matching brackets
-set mat=5 " how many tenths of a second to blink matching brackets for
-set nohlsearch " do not highlight searched for phrases
-set incsearch " BUT do highlight as you type you search phrase
-set so=5 " Keep 5 lines (top/bottom) for scope
-set novisualbell " don't blink
-" statusline example: ~\myfile[+] [FORMAT=format] [TYPE=type] [ASCII=000] [HEX=00] [POS=0000,0000][00%] [LEN=000]
-set statusline=%F%m%r%h%w\ [FORMAT=%{&ff}]\ [TYPE=%Y]\ [ASCII=\%03.3b]\ [HEX=\%02.2B]\ [POS=%04l,%04v][%p%%]\ [LEN=%L]
-set laststatus=2 " always show the status line
+" Enable syntax highlighting
+syntax on
 
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Indent Related
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-set ai " autoindent (filetype indenting instead)
-set nosi " smartindent (filetype indenting instead)
-set cindent " do c-style indenting
-set softtabstop=4 " unify
-set shiftwidth=4 " unify
-set tabstop=4 " real tabs should be 4, but they will show with set list on
-set copyindent " but above all -- follow the conventions laid before us
-filetype plugin indent on " load filetype plugins and indent settings
 
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Text Formatting/Layout
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-set fo=tcrq " See Help (complex)
-set shiftround " when at 3 spaces, and I hit > ... go to 4, not 5
-set expandtab " no real tabs!
-set nowrap " do not wrap line
-set preserveindent " but above all -- follow the conventions laid before us
-set ignorecase " case insensitive by default
-set smartcase " if there are caps, go case-sensitive
-set completeopt=menu,longest,preview " improve the way autocomplete works
-set cursorcolumn " show the current column
+"------------------------------------------------------------
+" Must have options {{{1
+"
+" These are highly recommended options.
 
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Folding
-"    Enable folding, but by default make it act like folding is
-"    off, because folding is annoying in anything but a few rare
-"    cases
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-set foldenable " Turn on folding
-set foldmarker={,} " Fold C style code
-set foldmethod=marker " Fold on the marker
-set foldlevel=100 " Don't autofold anything (but I can still fold manually)
-set foldopen-=search " don't open folds when you search into them
-set foldopen-=undo " don't open folds when you undo stuff
+" Vim with default settings does not allow easy switching between multiple files
+" in the same editor window. Users can use multiple split windows or multiple
+" tab pages to edit multiple files, but it is still best to enable an option to
+" allow easier switching between files.
+"
+" One such option is the 'hidden' option, which allows you to re-use the same
+" window and switch from an unsaved buffer without saving it first. Also allows
+" you to keep an undo history for multiple files when re-using the same window
+" in this way. Note that using persistent undo also lets you undo in multiple
+" files even in the same window, but is less efficient and is actually designed
+" for keeping undo history after closing Vim entirely. Vim will complain if you
+" try to quit without saving, and swap files will keep you safe if your computer
+" crashes.
+set hidden
 
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" CTags
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-let Tlist_Ctags_Cmd = 'ctags' " Location of ctags
-let Tlist_Sort_Type = "name" " order by
-let Tlist_Use_Right_Window = 1 " split to the right side of the screen
-let Tlist_Compact_Format = 1 " show small meny
-let Tlist_Exist_OnlyWindow = 1 " if you are the last, kill yourself
-let Tlist_File_Fold_Auto_Close = 0 " Do not close tags for other files
-let Tlist_Enable_Fold_Column = 1 " Do show folding tree
-let Tlist_WinWidth = 50 " 50 cols wide, so I can (almost always) read my functions
-let tlist_php_settings = 'php;c:class;d:constant;f:function' " don't show variables in php
-let tlist_aspvbs_settings = 'asp;f:function;s:sub' " just functions and subs
-let tlist_aspjscript_settings = 'asp;f:function;c:class' " just functions and classes
-let tlist_vb_settings = 'asp;f:function;c:class' " just functions and classes
+" Note that not everyone likes working this way (with the hidden option).
+" Alternatives include using tabs or split windows instead of re-using the same
+" window as mentioned above, and/or either of the following options:
+" set confirm
+" set autowriteall
 
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Matchit
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-let b:match_ignorecase = 1
+" Better command-line completion
+set wildmenu
 
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Perl
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-let perl_extended_vars=1 " highlight advanced perl vars inside strings
+" Show partial commands in the last line of the screen
+set showcmd
 
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Pathogen 
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-call pathogen#runtime_append_all_bundles() 
+" Highlight searches (use <C-L> to temporarily turn off highlighting; see the
+" mapping of <C-L> below)
+set hlsearch
 
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Custom Functions
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Select range, then hit :SuperRetab($width) - by p0g and FallingCow
-function! SuperRetab(width) range
-    silent! exe a:firstline . ',' . a:lastline . 's/\v%(^ *)@<= {'. a:width .'}/\t/g'
-endfunction
+" Modelines have historically been a source of security vulnerabilities. As
+" such, it may be a good idea to disable them and use the securemodelines
+" script, <http://www.vim.org/scripts/script.php?script_id=1876>.
+" set nomodeline
 
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Mappings
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" map <up> <ESC>:bp<RETURN> " left arrow (normal mode) switches buffers
-" map <down> <ESC>:bn<RETURN> " right arrow (normal mode) switches buffers
-" map <right> <ESC>:Tlist<RETURN> " show taglist
-" map <left> <ESC>:NERDTreeToggle<RETURN>  " moves left fa split
-" map <F2> <ESC>ggVG:call SuperRetab()<left>
-" map <F12> ggVGg? " apply rot13 for people snooping over shoulder, good fun
 
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Useful abbrevs
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-iab xdate <c-r>=strftime("%d/%m/%y %H:%M:%S")<cr> 
+"------------------------------------------------------------
+" Usability options {{{1
+"
+" These are options that users frequently set in their .vimrc. Some of them
+" change Vim's behaviour in ways which deviate from the true Vi way, but
+" which are considered to add usability. Which, if any, of these options to
+" use is very much a personal preference, but they are harmless.
 
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Autocommands
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-au BufRead,BufNewFile *.zcml set filetype=xml
-au BufRead,BufNewFile *.rb,*.rhtml set tabstop=2
-au BufRead,BufNewFile *.rb,*.rhtml set shiftwidth=2
-au BufRead,BufNewFile *.rb,*.rhtml set softtabstop=2
-au BufRead,BufNewFile *.otl set syntax=blockhl
-au FileType python set omnifunc=pythoncomplete#Complete
-au FileType javascript set omnifunc=javascriptcomplete#CompleteJS
-au FileType html set omnifunc=htmlcomplete#CompleteTags
-au FileType css set omnifunc=csscomplete#CompleteCSS
-au FileType xml set omnifunc=xmlcomplete#CompleteTags
-au FileType c set omnifunc=ccomplete#Complete
+" Use case insensitive search, except when using capital letters
+set ignorecase
+set smartcase
 
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Change paging overlap amount from 2 to 5 (+3)
-" if you swapped C-y and C-e, and set them to 2, it would
-" remove any overlap between pages
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-nnoremap <C-f> <C-f>3<C-y> "  Make overlap 3 extra on control-f
-nnoremap <C-b> <C-b>3<C-e> "  Make overlap 3 extra on control-b
+" Allow backspacing over autoindent, line breaks and start of insert action
+set backspace=indent,eol,start
+
+" When opening a new line and no filetype-specific indenting is enabled, keep
+" the same indent as the line you're currently on. Useful for READMEs, etc.
+set autoindent
+
+" Stop certain movements from always going to the first character of a line.
+" While this behaviour deviates from that of Vi, it does what most users
+" coming from other editors would expect.
+set nostartofline
+
+" Display the cursor position on the last line of the screen or in the status
+" line of a window
+set ruler
+
+" Always display the status line, even if only one window is displayed
+set laststatus=2
+
+" Instead of failing a command because of unsaved changes, instead raise a
+" dialogue asking if you wish to save changed files.
+set confirm
+
+" Use visual bell instead of beeping when doing something wrong
+set visualbell
+
+" And reset the terminal code for the visual bell. If visualbell is set, and
+" this line is also included, vim will neither flash nor beep. If visualbell
+" is unset, this does nothing.
+set t_vb=
+
+" Enable use of the mouse for all modes
+set mouse=a
+
+" Set the command window height to 2 lines, to avoid many cases of having to
+" "press <Enter> to continue"
+set cmdheight=2
+
+" Display line numbers on the left
+set number
+
+" Quickly time out on keycodes, but never time out on mappings
+set notimeout ttimeout ttimeoutlen=200
+
+" Use <F11> to toggle between 'paste' and 'nopaste'
+set pastetoggle=<F11>
+
+
+"------------------------------------------------------------
+" Indentation options {{{1
+"
+" Indentation settings according to personal preference.
+
+" Indentation settings for using 2 spaces instead of tabs.
+" Do not change 'tabstop' from its default value of 8 with this setup.
+set shiftwidth=2
+set softtabstop=2
+set expandtab
+
+" Indentation settings for using hard tabs for indent. Display tabs as
+" two characters wide.
+"set shiftwidth=2
+"set tabstop=2
+
+
+"------------------------------------------------------------
+" Mappings {{{1
+"
+" Useful mappings
+
+" Map Y to act like D and C, i.e. to yank until EOL, rather than act as yy,
+" which is the default
+map Y y$
+
+" Map <C-L> (redraw screen) to also turn off search highlighting until the
+" next search
+nnoremap <C-L> :nohl<CR><C-L>
+
+
+"------------------------------------------------------------

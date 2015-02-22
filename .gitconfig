@@ -1,9 +1,9 @@
 [user]
-	name = Adam Eivy
-	email = adam.eivy@disney.com
+	name = Danny Page
+	email = daniel.w.page@gmail.com
 [github]
     # https://github.com/blog/180-local-github-config
-    user = atomantic
+    user = dannypage
 
     # in a few months, look into the include directive (after bug fixes)
     token = MOVEALONG
