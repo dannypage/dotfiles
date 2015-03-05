@@ -29,4 +29,4 @@ source $ZSH/oh-my-zsh.sh
 # Customize to your needs...
 unsetopt correct
 
-export PATH="/Users/danielpage/.rbenv/shims:${PATH}"
+
