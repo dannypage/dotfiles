@@ -175,7 +175,8 @@ require_cask firefox
 #require_cask firefox-aurora
 require_cask google-chrome
 require_cask google-chrome-canary
-require_cask torbrowser
+
+#require_cask torbrowser
 
 # virtal machines
 require_cask virtualbox
