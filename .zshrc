@@ -7,6 +7,7 @@ export ZSH=$HOME/.dotfiles/oh-my-zsh
 # time that oh-my-zsh is loaded.
 #export ZSH_THEME="pygmalion"
 export ZSH_THEME="minimal"
+#export ZSH_THEME="random"
 
 # Set to this to use case-sensitive completion
 export CASE_SENSITIVE="false"
@@ -28,5 +29,3 @@ source $ZSH/oh-my-zsh.sh
 
 # Customize to your needs...
 unsetopt correct
-
-export PATH="/Users/danielpage/.rbenv/shims:${PATH}"
