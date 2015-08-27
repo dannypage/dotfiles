@@ -60,6 +60,7 @@
 	d = diff --color-words
 	cam = commit -a -m
 	upm = !git fetch upstream && git merge upstream/master
+	check = git grep -n -E 'TODO|FIXME|XXX'
 
 	# least used
 	br = branch -a
