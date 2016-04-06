@@ -4,13 +4,32 @@
 source ./lib.sh
 
 # Ask for the administrator password upfront
-bot "I need you to enter your sudo password so I can install some things:"
-sudo -v
 
-# Keep-alive: update existing `sudo` time stamp until `.osx` has finished
-while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
+bot "checking sudo state..."
+if sudo grep -q "# %wheel\tALL=(ALL) NOPASSWD: ALL" "/etc/sudoers"; then
 
-bot "OK, let's roll..."
+  # Ask for the administrator password upfront
+  bot "I need you to enter your sudo password so I can install some things:"
+  sudo -v
+
+  # Keep-alive: update existing sudo time stamp until the script has finished
+  while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
+
+  bot "Do you want me to setup this machine to allow you to run sudo without a password?\nPlease read here to see what I am doing:\nhttp://wiki.summercode.com/sudo_without_a_password_in_mac_os_x \n"
+
+  read -r -p "Make sudo passwordless? [y|N] " response
+
+  if [[ $response =~ (yes|y|Y) ]];then
+      sed --version 2>&1 > /dev/null
+      sudo sed -i '' 's/^#\s*\(%wheel\s\+ALL=(ALL)\s\+NOPASSWD:\s\+ALL\)/\1/' /etc/sudoers
+      if [[ $? == 0 ]];then
+          sudo sed -i 's/^#\s*\(%wheel\s\+ALL=(ALL)\s\+NOPASSWD:\s\+ALL\)/\1/' /etc/sudoers
+      fi
+      sudo dscl . append /Groups/wheel GroupMembership $(whoami)
+      bot "You can now run sudo commands without password!"
+  fi
+fi
+ok
 
 #####
 # install homebrew
@@ -19,20 +38,20 @@ bot "OK, let's roll..."
 running "checking homebrew install"
 brew_bin=$(which brew) 2>&1 > /dev/null
 if [[ $? != 0 ]]; then
-	action "installing homebrew"
-    ruby -e "$(curl -fsSL https://raw.github.com/Homebrew/homebrew/go/install)"
+  action "installing homebrew"
+    ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
     if [[ $? != 0 ]]; then
-    	error "unable to install homebrew, script $0 abort!"
-    	exit -1
-	fi
+      error "unable to install homebrew, script $0 abort!"
+      exit -1
+  fi
 fi
 ok
 
 running "checking brew-cask install"
 output=$(brew tap | grep cask)
 if [[ $? != 0 ]]; then
-	action "installing brew-cask"
-	require_brew caskroom/cask/brew-cask
+  action "installing brew-cask"
+  require_brew caskroom/cask/brew-cask
 fi
 ok
 
@@ -84,9 +103,11 @@ require_brew ack
 # launchctl load ~/Library/LaunchAgents/homebrew.mxcl.beanstalk.plist
 
 # docker setup:
-require_brew fig
-require_brew docker
-require_brew boot2docker
+# note, instead, use https://github.com/atomantic/generator-dockerize for dev tooling
+# require_brew boot2docker
+
+require_brew consul
+require_brew consul-template
 
 # dos2unix converts windows newlines to unix newlines
 require_brew dos2unix
@@ -104,22 +125,22 @@ require_brew gnupg
 # Install GNU `sed`, overwriting the built-in `sed`
 # so we can do "sed -i 's/foo/bar/' file" instead of "sed -i '' 's/foo/bar/' file"
 require_brew gnu-sed --default-names
+require_brew go
 # better, more recent grep
 require_brew homebrew/dupes/grep
-require_brew hub
 require_brew imagemagick
 require_brew imagesnap
 # jq is a JSON grep
 require_brew jq
 # http://maven.apache.org/
-require_brew maven
-require_brew memcached
+# require_brew maven
 require_brew nmap
-require_brew node
-require_brew redis
+# require_brew node
+require_brew nvm
+require_brew openconnect
+require_brew ruby
 # better/more recent version of screen
 require_brew homebrew/dupes/screen
-require_brew tig
 require_brew tree
 require_brew ttyrec
 # better, more recent vim
@@ -128,10 +149,46 @@ require_brew watch
 # Install wget with IRI support
 require_brew wget --enable-iri
 
-bot "if you would like to start memcached at login, run this:"
-echo "ln -sfv /usr/local/opt/memcached/*.plist ~/Library/LaunchAgents"
-bot "if you would like to start memcached now, run this:"
-echo "launchctl load ~/Library/LaunchAgents/homebrew.mxcl.memcached.plist"
+# nvm
+require_nvm stable
+
+###############################################################################
+bot "NPM Globals..."
+###############################################################################
+
+require_npm antic
+require_npm buzzphrase
+require_npm bower
+require_npm bower-check-updates
+require_npm npm-check
+# http://ionicframework.com/
+# require_npm cordova
+# require_npm ionic
+require_npm yo
+# https://github.com/markdalgleish/bespoke.js
+require_npm generator-bespoke
+require_npm generator-dockerize
+# require_npm grunt
+require_npm gulp
+require_npm eslint
+# NOTE: now using PM2 and forever in docker containers (not in host)
+# http://devo.ps/blog/goodbye-node-forever-hello-pm2/
+# require_npm pm2
+require_npm prettyjson
+# require_npm supervisor
+# https://github.com/sindresorhus/trash
+require_npm trash
+# https://github.com/MrRio/vtop
+require_npm vtop
+
+###############################################################################
+bot "Ruby Gems..."
+###############################################################################
+sudo chown -R $(whoami) /Library/Ruby/Gems/2.0.0
+# require_brew rbenv
+# require_brew ruby-build
+# eval "$(rbenv init -)"
+require_gem git-up
 
 ###############################################################################
 # Native Apps (via brew cask)                                                 #
@@ -144,7 +201,6 @@ brew tap caskroom/versions > /dev/null 2>&1
 #require_cask box-sync
 require_cask dropbox
 #require_cask evernote
-#require_cask skydrive
 
 # communication
 #require_cask adium
@@ -154,41 +210,51 @@ require_cask slack
 #require_cask comicbooklover
 require_cask diffmerge
 #require_cask flash-player
-require_cask github
 require_cask gpgtools
-require_cask ireadfast
+# require_cask ireadfast
 require_cask iterm2
-require_cask lastpass
 #require_cask macvim
 require_cask sizeup
 #require_cask simple-comic
 #require_cask sketchup
-require_cask sublime-text
-require_cask the-unarchiver
+
+require_cask atom
+# require_apm linter
+# require_apm linter-eslint
+# require_apm atom-beautify
+
+# require_cask the-unarchiver
 #require_cask transmission
-require_cask vlc
+# require_cask vlc
 require_cask xquartz
 
 # development browsers
-require_cask breach
-require_cask firefox
+# require_cask breach
+# require_cask firefox
 #require_cask firefox-aurora
 require_cask google-chrome
+<<<<<<< HEAD
 require_cask google-chrome-canary
 
 #require_cask torbrowser
+=======
+# require_cask google-chrome-canary
+# require_cask torbrowser
+>>>>>>> 111001ff4d6fa8be9e8ee8df189629bc969b65af
 
 # virtal machines
-require_cask virtualbox
+# require_cask virtualbox
 # chef-dk, berkshelf, etc
-require_cask chefdk
+#require_cask chefdk
 # vagrant for running dev environments using docker images
-require_cask vagrant # # | grep Caskroom | sed "s/.*'\(.*\)'.*/open \1\/Vagrant.pkg/g" | sh
+#require_cask vagrant # # | grep Caskroom | sed "s/.*'\(.*\)'.*/open \1\/Vagrant.pkg/g" | sh
 
-bot "Alright, cleaning up homebrew cache..."
+
+
+# bot "Alright, cleaning up homebrew cache..."
 # Remove outdated versions from the cellar
-brew cleanup > /dev/null 2>&1
-bot "All clean"
+# brew cleanup > /dev/null 2>&1
+# bot "All clean"
 
 ###############################################################################
 bot "Configuring General System UI/UX..."
@@ -275,8 +341,10 @@ running "Set a custom wallpaper image"
 # `DefaultDesktop.jpg` is already a symlink, and
 # all wallpapers are in `/Library/Desktop Pictures/`. The default is `Wave.jpg`.
 rm -rf ~/Library/Application Support/Dock/desktoppicture.db
-sudo rm -rf /System/Library/CoreServices/DefaultDesktop.jpg
-sudo ln -s ~/.dotfiles/img/wallpaper.jpg /System/Library/CoreServices/DefaultDesktop.jpg;ok
+sudo rm -f /System/Library/CoreServices/DefaultDesktop.jpg
+sudo rm -f /Library/Desktop\ Pictures/El\ Capitan.jpg
+sudo cp ./img/wallpaper.jpg /System/Library/CoreServices/DefaultDesktop.jpg;
+sudo cp ./img/wallpaper.jpg /Library/Desktop\ Pictures/El\ Capitan.jpg;ok
 
 
 ################################################
@@ -299,16 +367,16 @@ defaults write NSGlobalDomain AppleEnableMenuBarTransparency -bool false;ok
 
 running "Menu bar: hide the Time Machine, Volume, User, and Bluetooth icons"
 for domain in ~/Library/Preferences/ByHost/com.apple.systemuiserver.*; do
-	defaults write "${domain}" dontAutoLoad -array \
-		"/System/Library/CoreServices/Menu Extras/TimeMachine.menu" \
-		"/System/Library/CoreServices/Menu Extras/Volume.menu" \
-		"/System/Library/CoreServices/Menu Extras/User.menu"
+  defaults write "${domain}" dontAutoLoad -array \
+    "/System/Library/CoreServices/Menu Extras/TimeMachine.menu" \
+    "/System/Library/CoreServices/Menu Extras/Volume.menu" \
+    "/System/Library/CoreServices/Menu Extras/User.menu"
 done;
 defaults write com.apple.systemuiserver menuExtras -array \
-	"/System/Library/CoreServices/Menu Extras/Bluetooth.menu" \
-	"/System/Library/CoreServices/Menu Extras/AirPort.menu" \
-	"/System/Library/CoreServices/Menu Extras/Battery.menu" \
-	"/System/Library/CoreServices/Menu Extras/Clock.menu"
+  "/System/Library/CoreServices/Menu Extras/Bluetooth.menu" \
+  "/System/Library/CoreServices/Menu Extras/AirPort.menu" \
+  "/System/Library/CoreServices/Menu Extras/Battery.menu" \
+  "/System/Library/CoreServices/Menu Extras/Clock.menu"
 ok
 
 running "Set highlight color to green"
@@ -524,9 +592,9 @@ chflags nohidden ~/Library;ok
 
 running "Expand the following File Info panes: “General”, “Open with”, and “Sharing & Permissions”"
 defaults write com.apple.finder FXInfoPanesExpanded -dict \
-	General -bool true \
-	OpenWith -bool true \
-	Privileges -bool true;ok
+  General -bool true \
+  OpenWith -bool true \
+  Privileges -bool true;ok
 
 ###############################################################################
 bot "Dock & Dashboard"
@@ -690,22 +758,22 @@ running "Disable Spotlight indexing for any volume that gets mounted and has not
 sudo defaults write /.Spotlight-V100/VolumeConfiguration Exclusions -array "/Volumes";ok
 running "Change indexing order and disable some file types from being indexed"
 defaults write com.apple.spotlight orderedItems -array \
-	'{"enabled" = 1;"name" = "APPLICATIONS";}' \
-	'{"enabled" = 1;"name" = "SYSTEM_PREFS";}' \
-	'{"enabled" = 1;"name" = "DIRECTORIES";}' \
-	'{"enabled" = 1;"name" = "PDF";}' \
-	'{"enabled" = 1;"name" = "FONTS";}' \
-	'{"enabled" = 0;"name" = "DOCUMENTS";}' \
-	'{"enabled" = 0;"name" = "MESSAGES";}' \
-	'{"enabled" = 0;"name" = "CONTACT";}' \
-	'{"enabled" = 0;"name" = "EVENT_TODO";}' \
-	'{"enabled" = 0;"name" = "IMAGES";}' \
-	'{"enabled" = 0;"name" = "BOOKMARKS";}' \
-	'{"enabled" = 0;"name" = "MUSIC";}' \
-	'{"enabled" = 0;"name" = "MOVIES";}' \
-	'{"enabled" = 0;"name" = "PRESENTATIONS";}' \
-	'{"enabled" = 0;"name" = "SPREADSHEETS";}' \
-	'{"enabled" = 0;"name" = "SOURCE";}';ok
+  '{"enabled" = 1;"name" = "APPLICATIONS";}' \
+  '{"enabled" = 1;"name" = "SYSTEM_PREFS";}' \
+  '{"enabled" = 1;"name" = "DIRECTORIES";}' \
+  '{"enabled" = 1;"name" = "PDF";}' \
+  '{"enabled" = 1;"name" = "FONTS";}' \
+  '{"enabled" = 0;"name" = "DOCUMENTS";}' \
+  '{"enabled" = 0;"name" = "MESSAGES";}' \
+  '{"enabled" = 0;"name" = "CONTACT";}' \
+  '{"enabled" = 0;"name" = "EVENT_TODO";}' \
+  '{"enabled" = 0;"name" = "IMAGES";}' \
+  '{"enabled" = 0;"name" = "BOOKMARKS";}' \
+  '{"enabled" = 0;"name" = "MUSIC";}' \
+  '{"enabled" = 0;"name" = "MOVIES";}' \
+  '{"enabled" = 0;"name" = "PRESENTATIONS";}' \
+  '{"enabled" = 0;"name" = "SPREADSHEETS";}' \
+  '{"enabled" = 0;"name" = "SOURCE";}';ok
 running "Load new settings before rebuilding the index"
 killall mds > /dev/null 2>&1;ok
 running "Make sure indexing is enabled for the main volume"
@@ -717,18 +785,18 @@ sudo mdutil -i on / > /dev/null;ok
 bot "Terminal & iTerm2"
 ###############################################################################
 
-running "Only use UTF-8 in Terminal.app"
-defaults write com.apple.terminal StringEncodings -array 4;ok
-
-running "Use a modified version of the Solarized Dark theme by default in Terminal.app"
-TERM_PROFILE='Solarized Dark xterm-256color';
-CURRENT_PROFILE="$(defaults read com.apple.terminal 'Default Window Settings')";
-if [ "${CURRENT_PROFILE}" != "${TERM_PROFILE}" ]; then
-	open "./configs/${TERM_PROFILE}.terminal";
-	sleep 1; # Wait a bit to make sure the theme is loaded
-	defaults write com.apple.terminal 'Default Window Settings' -string "${TERM_PROFILE}";
-	defaults write com.apple.terminal 'Startup Window Settings' -string "${TERM_PROFILE}";
-fi;
+# running "Only use UTF-8 in Terminal.app"
+# defaults write com.apple.terminal StringEncodings -array 4;ok
+#
+# running "Use a modified version of the Solarized Dark theme by default in Terminal.app"
+# TERM_PROFILE='Solarized Dark xterm-256color';
+# CURRENT_PROFILE="$(defaults read com.apple.terminal 'Default Window Settings')";
+# if [ "${CURRENT_PROFILE}" != "${TERM_PROFILE}" ]; then
+# 	open "./configs/${TERM_PROFILE}.terminal";
+# 	sleep 1; # Wait a bit to make sure the theme is loaded
+# 	defaults write com.apple.terminal 'Default Window Settings' -string "${TERM_PROFILE}";
+# 	defaults write com.apple.terminal 'Startup Window Settings' -string "${TERM_PROFILE}";
+# fi;
 
 #running "Enable “focus follows mouse” for Terminal.app and all X11 apps"
 # i.e. hover over a window and start typing in it without clicking first
@@ -843,49 +911,19 @@ defaults write com.irradiatedsoftware.SizeUp StartAtLogin -bool true;ok
 running "Don’t show the preferences window on next start"
 defaults write com.irradiatedsoftware.SizeUp ShowPrefsOnNextStart -bool false;ok
 
-###############################################################################
-bot "Sublime Text"
-###############################################################################
-
-running "Install Sublime Text settings"
-cp -r configs/Preferences.sublime-settings ~/Library/Application\ Support/Sublime\ Text*/Packages/User/Preferences.sublime-settings 2> /dev/null;ok
-
-###############################################################################
-bot "NPM Globals..."
-###############################################################################
-
-require_npm antic
-require_npm bower
-# http://ionicframework.com/
-require_npm cordova
-require_npm ionic
-# https://github.com/markdalgleish/bespoke.js
-require_npm generator-bespoke
-require_npm grunt
-require_npm gulp
-require_npm jshint
-# http://devo.ps/blog/goodbye-node-forever-hello-pm2/
-require_npm pm2
-require_npm prettyjson
-require_npm supervisor
-# https://github.com/sindresorhus/trash
-require_npm trash
-# https://github.com/MrRio/vtop
-require_npm vtop
-require_npm yo
-
-###############################################################################
-bot "Ruby Gems..."
-###############################################################################
-require_gem git-up
-
 
 ###############################################################################
 # Kill affected applications                                                  #
 ###############################################################################
 bot "OK. Note that some of these changes require a logout/restart to take effect. Killing affected applications (so they can reboot)...."
 for app in "Activity Monitor" "Address Book" "Calendar" "Contacts" "cfprefsd" \
+<<<<<<< HEAD
 	"Dock" "Finder" "Mail" "Messages" "Safari" "SizeUp" "SystemUIServer" \
 	"iCal" "Terminal"; do
 	killall "${app}" > /dev/null 2>&1
+=======
+  "Dock" "Finder" "Mail" "Messages" "Safari" "SizeUp" "SystemUIServer" \
+  "iCal" "Terminal"; do
+  killall "${app}" > /dev/null 2>&1
+>>>>>>> 111001ff4d6fa8be9e8ee8df189629bc969b65af
 done
