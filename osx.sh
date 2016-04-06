@@ -106,16 +106,16 @@ require_brew ack
 # note, instead, use https://github.com/atomantic/generator-dockerize for dev tooling
 # require_brew boot2docker
 
-require_brew consul
-require_brew consul-template
+#require_brew consul
+#require_brew consul-template
 
 # dos2unix converts windows newlines to unix newlines
 require_brew dos2unix
 # fortune command--I source this as a better motd :)
-require_brew fortune
-require_brew gawk
+#require_brew fortune
+#require_brew gawk
 # http://www.lcdf.org/gifsicle/ (because I'm a gif junky)
-require_brew gifsicle
+#require_brew gifsicle
 # skip those GUI clients, git command-line all the way
 require_brew git
 # yes, yes, use git-flow, please :)
@@ -134,15 +134,15 @@ require_brew imagesnap
 require_brew jq
 # http://maven.apache.org/
 # require_brew maven
-require_brew nmap
+#require_brew nmap
 # require_brew node
-require_brew nvm
-require_brew openconnect
-require_brew ruby
+#require_brew nvm
+#require_brew openconnect
+#require_brew ruby
 # better/more recent version of screen
-require_brew homebrew/dupes/screen
-require_brew tree
-require_brew ttyrec
+#require_brew homebrew/dupes/screen
+#require_brew tree
+#require_brew ttyrec
 # better, more recent vim
 require_brew vim --override-system-vi
 require_brew watch
@@ -185,10 +185,10 @@ require_npm vtop
 bot "Ruby Gems..."
 ###############################################################################
 sudo chown -R $(whoami) /Library/Ruby/Gems/2.0.0
-# require_brew rbenv
+ require_brew rbenv
 # require_brew ruby-build
 # eval "$(rbenv init -)"
-require_gem git-up
+#require_gem git-up
 
 ###############################################################################
 # Native Apps (via brew cask)                                                 #
@@ -208,13 +208,13 @@ require_cask slack
 
 # tools
 #require_cask comicbooklover
-require_cask diffmerge
+#require_cask diffmerge
 #require_cask flash-player
-require_cask gpgtools
+#require_cask gpgtools
 # require_cask ireadfast
 require_cask iterm2
 #require_cask macvim
-require_cask sizeup
+#require_cask sizeup
 #require_cask simple-comic
 #require_cask sketchup
 
@@ -233,14 +233,9 @@ require_cask xquartz
 # require_cask firefox
 #require_cask firefox-aurora
 require_cask google-chrome
-<<<<<<< HEAD
-require_cask google-chrome-canary
 
-#require_cask torbrowser
-=======
-# require_cask google-chrome-canary
-# require_cask torbrowser
->>>>>>> 111001ff4d6fa8be9e8ee8df189629bc969b65af
+#require_cask google-chrome-canary
+
 
 # virtal machines
 # require_cask virtualbox
@@ -265,18 +260,18 @@ bot "Configuring General System UI/UX..."
 # SSD-specific tweaks                                                         #
 ###############################################################################
 
-running "Disable local Time Machine snapshots"
-sudo tmutil disablelocal;ok
+#running "Disable local Time Machine snapshots"
+#sudo tmutil disablelocal;ok
 
-running "Disable hibernation (speeds up entering sleep mode)"
-sudo pmset -a hibernatemode 0;ok
+#running "Disable hibernation (speeds up entering sleep mode)"
+#sudo pmset -a hibernatemode 0;ok
 
-running "Remove the sleep image file to save disk space"
-sudo rm -rf /Private/var/vm/sleepimage;ok
-running "Create a zero-byte file instead"
-sudo touch /Private/var/vm/sleepimage;ok
-running "…and make sure it can’t be rewritten"
-sudo chflags uchg /Private/var/vm/sleepimage;ok
+#running "Remove the sleep image file to save disk space"
+#sudo rm -rf /Private/var/vm/sleepimage;ok
+#running "Create a zero-byte file instead"
+#sudo touch /Private/var/vm/sleepimage;ok
+#running "…and make sure it can’t be rewritten"
+#sudo chflags uchg /Private/var/vm/sleepimage;ok
 
 #running "Disable the sudden motion sensor as it’s not useful for SSDs"
 # sudo pmset -a sms 0;ok
@@ -337,50 +332,50 @@ sudo chflags uchg /Private/var/vm/sleepimage;ok
 #running "Add a spacer to the right side of the Dock (where the Trash is)"
 #defaults write com.apple.dock persistent-others -array-add '{tile-data={}; tile-type="spacer-tile";}';ok
 
-running "Set a custom wallpaper image"
+#running "Set a custom wallpaper image"
 # `DefaultDesktop.jpg` is already a symlink, and
 # all wallpapers are in `/Library/Desktop Pictures/`. The default is `Wave.jpg`.
-rm -rf ~/Library/Application Support/Dock/desktoppicture.db
-sudo rm -f /System/Library/CoreServices/DefaultDesktop.jpg
-sudo rm -f /Library/Desktop\ Pictures/El\ Capitan.jpg
-sudo cp ./img/wallpaper.jpg /System/Library/CoreServices/DefaultDesktop.jpg;
-sudo cp ./img/wallpaper.jpg /Library/Desktop\ Pictures/El\ Capitan.jpg;ok
+#rm -rf ~/Library/Application Support/Dock/desktoppicture.db
+#sudo rm -f /System/Library/CoreServices/DefaultDesktop.jpg
+#sudo rm -f /Library/Desktop\ Pictures/El\ Capitan.jpg
+#sudo cp ./img/wallpaper.jpg /System/Library/CoreServices/DefaultDesktop.jpg;
+#sudo cp ./img/wallpaper.jpg /Library/Desktop\ Pictures/El\ Capitan.jpg;ok
 
 
 ################################################
 bot "Standard System Changes"
 ################################################
-running "always boot in verbose mode (not OSX GUI mode)"
-sudo nvram boot-args="-v";ok
+#running "always boot in verbose mode (not OSX GUI mode)"
+#sudo nvram boot-args="-v";ok
 
 running "allow 'locate' command"
 sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.locate.plist > /dev/null 2>&1;ok
 
-running "Set standby delay to 24 hours (default is 1 hour)"
-sudo pmset -a standbydelay 86400;ok
+#running "Set standby delay to 24 hours (default is 1 hour)"
+#sudo pmset -a standbydelay 86400;ok
 
-running "Disable the sound effects on boot"
-sudo nvram SystemAudioVolume=" ";ok
+#running "Disable the sound effects on boot"
+#sudo nvram SystemAudioVolume=" ";ok
 
 running "Menu bar: disable transparency"
 defaults write NSGlobalDomain AppleEnableMenuBarTransparency -bool false;ok
 
-running "Menu bar: hide the Time Machine, Volume, User, and Bluetooth icons"
-for domain in ~/Library/Preferences/ByHost/com.apple.systemuiserver.*; do
-  defaults write "${domain}" dontAutoLoad -array \
-    "/System/Library/CoreServices/Menu Extras/TimeMachine.menu" \
-    "/System/Library/CoreServices/Menu Extras/Volume.menu" \
-    "/System/Library/CoreServices/Menu Extras/User.menu"
-done;
-defaults write com.apple.systemuiserver menuExtras -array \
-  "/System/Library/CoreServices/Menu Extras/Bluetooth.menu" \
-  "/System/Library/CoreServices/Menu Extras/AirPort.menu" \
-  "/System/Library/CoreServices/Menu Extras/Battery.menu" \
-  "/System/Library/CoreServices/Menu Extras/Clock.menu"
-ok
+#running "Menu bar: hide the Time Machine, Volume, User, and Bluetooth icons"
+#for domain in ~/Library/Preferences/ByHost/com.apple.systemuiserver.*; do
+#  defaults write "${domain}" dontAutoLoad -array \
+    #"/System/Library/CoreServices/Menu Extras/TimeMachine.menu" \
+    #"/System/Library/CoreServices/Menu Extras/Volume.menu" \
+    #"/System/Library/CoreServices/Menu Extras/User.menu"
+#done;
+#defaults write com.apple.systemuiserver menuExtras -array \
+  #"/System/Library/CoreServices/Menu Extras/Bluetooth.menu" \
+  #"/System/Library/CoreServices/Menu Extras/AirPort.menu" \
+  #"/System/Library/CoreServices/Menu Extras/Battery.menu" \
+  #"/System/Library/CoreServices/Menu Extras/Clock.menu"
+#ok
 
-running "Set highlight color to green"
-defaults write NSGlobalDomain AppleHighlightColor -string "0.764700 0.976500 0.568600";ok
+#running "Set highlight color to green"
+#defaults write NSGlobalDomain AppleHighlightColor -string "0.764700 0.976500 0.568600";ok
 
 running "Set sidebar icon size to medium"
 defaults write NSGlobalDomain NSTableViewDefaultSizeMode -int 2;ok
@@ -416,11 +411,11 @@ running "Display ASCII control characters using caret notation in standard text 
 # Try e.g. `cd /tmp; unidecode "\x{0000}" > cc.txt; open -e cc.txt`
 defaults write NSGlobalDomain NSTextShowsControlCharacters -bool true;ok
 
-running "Disable automatic termination of inactive apps"
-defaults write NSGlobalDomain NSDisableAutomaticTermination -bool true;ok
+#running "Disable automatic termination of inactive apps"
+#defaults write NSGlobalDomain NSDisableAutomaticTermination -bool true;ok
 
-running "Disable the crash reporter"
-defaults write com.apple.CrashReporter DialogType -string "none";ok
+#running "Disable the crash reporter"
+#defaults write com.apple.CrashReporter DialogType -string "none";ok
 
 running "Set Help Viewer windows to non-floating mode"
 defaults write com.apple.helpviewer DevMode -bool true;ok
@@ -428,17 +423,17 @@ defaults write com.apple.helpviewer DevMode -bool true;ok
 running "Reveal IP, hostname, OS, etc. when clicking clock in login window"
 sudo defaults write /Library/Preferences/com.apple.loginwindow AdminHostInfo HostName;ok
 
-running "Restart automatically if the computer freezes"
-sudo systemsetup -setrestartfreeze on;ok
+#running "Restart automatically if the computer freezes"
+#sudo systemsetup -setrestartfreeze on;ok
 
-running "Never go into computer sleep mode"
-sudo systemsetup -setcomputersleep Off > /dev/null;ok
+#running "Never go into computer sleep mode"
+#sudo systemsetup -setcomputersleep Off > /dev/null;ok
 
 running "Check for software updates daily, not just once per week"
 defaults write com.apple.SoftwareUpdate ScheduleFrequency -int 1;ok
 
-running "Disable Notification Center and remove the menu bar icon"
-launchctl unload -w /System/Library/LaunchAgents/com.apple.notificationcenterui.plist > /dev/null 2>&1;ok
+#running "Disable Notification Center and remove the menu bar icon"
+#launchctl unload -w /System/Library/LaunchAgents/com.apple.notificationcenterui.plist > /dev/null 2>&1;ok
 
 running "Disable smart quotes as they’re annoying when typing code"
 defaults write NSGlobalDomain NSAutomaticQuoteSubstitutionEnabled -bool false;ok
@@ -917,13 +912,7 @@ defaults write com.irradiatedsoftware.SizeUp ShowPrefsOnNextStart -bool false;ok
 ###############################################################################
 bot "OK. Note that some of these changes require a logout/restart to take effect. Killing affected applications (so they can reboot)...."
 for app in "Activity Monitor" "Address Book" "Calendar" "Contacts" "cfprefsd" \
-<<<<<<< HEAD
 	"Dock" "Finder" "Mail" "Messages" "Safari" "SizeUp" "SystemUIServer" \
 	"iCal" "Terminal"; do
 	killall "${app}" > /dev/null 2>&1
-=======
-  "Dock" "Finder" "Mail" "Messages" "Safari" "SizeUp" "SystemUIServer" \
-  "iCal" "Terminal"; do
-  killall "${app}" > /dev/null 2>&1
->>>>>>> 111001ff4d6fa8be9e8ee8df189629bc969b65af
 done
